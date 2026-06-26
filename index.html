@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRANCE Bonus Vault</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #060d0a;
+      --surface:    #0a1510;
+      --surface2:   #0f1f16;
+      --border:     #1a3528;
+      --accent:     #00c853;
+      --accent2:    #69f0ae;
+      --accent3:    #b9f6ca;
+      --text:       #e8f5e9;
+      --muted:      #4a7a5a;
+      --success:    #00e676;
+      --danger:     #ff5252;
+      --warn:       #ffab40;
+      --radius:     14px;
+      --radius-sm:  8px;
+    }
+
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    /* ─── Glow background blobs ─────────────────────────────── */
+    .bg-blobs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .bg-blobs span {
+      position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.12;
+    }
+    .bg-blobs span:nth-child(1) { width: 600px; height: 600px; background: #00c853;  top: -200px; left: -200px; }
+    .bg-blobs span:nth-child(2) { width: 400px; height: 400px; background: #69f0ae; bottom: -100px; right: -100px; }
+    .bg-blobs span:nth-child(3) { width: 300px; height: 300px; background: #b9f6ca; top: 40%; left: 50%; }
+
+    /* ─── Layout ─────────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    /* ─── Header ─────────────────────────────────────────────── */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 28px;
+      flex-wrap: wrap; gap: 14px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, #00c853, #69f0ae);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; color: #fff; letter-spacing: -1px;
+    }
+    .logo-text h1 { font-size: 18px; font-weight: 700; color: var(--text); }
+    .logo-text p  { font-size: 12px; color: var(--muted); }
+
+    .connect-area { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .network-badge {
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 20px; background: rgba(0,200,83,0.15);
+      color: var(--accent); border: 1px solid rgba(0,200,83,0.3);
+    }
+    .wallet-addr {
+      font-size: 12px; font-weight: 600; padding: 6px 14px;
+      border-radius: 20px; background: var(--surface2);
+      color: var(--accent2); border: 1px solid var(--border);
+      font-family: monospace;
+    }
+    .wallet-balance {
+      font-size: 12px; font-weight: 700; padding: 6px 14px;
+      border-radius: 20px; background: rgba(105,240,174,0.12);
+      color: var(--accent3); border: 1px solid rgba(105,240,174,0.3);
+    }
+
+    /* ─── Buttons ────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+      border-radius: var(--radius-sm); padding: 10px 22px;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #69f0ae);
+      color: #fff; box-shadow: 0 4px 18px rgba(0,200,83,0.35);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,200,83,0.5); }
+    .btn-teal {
+      background: linear-gradient(135deg, #69f0ae, #b9f6ca);
+      color: #060d0a; box-shadow: 0 4px 14px rgba(105,240,174,0.3);
+    }
+    .btn-teal:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn-amber {
+      background: linear-gradient(135deg, #00e676, #69f0ae);
+      color: #060d0a; box-shadow: 0 4px 14px rgba(105,240,174,0.3);
+    }
+    .btn-amber:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover:not(:disabled) { background: var(--surface2); border-color: var(--accent); }
+    .btn-sm   { font-size: 12px; padding: 6px 14px; }
+    .btn-full { width: 100%; }
+
+    /* ─── Cards ──────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .card-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ─── Stats grid ─────────────────────────────────────────── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .stat-card.purple::before { background: linear-gradient(90deg, var(--accent), #69f0ae); }
+    .stat-card.teal::before   { background: linear-gradient(90deg, #69f0ae, #b9f6ca); }
+    .stat-card.amber::before  { background: linear-gradient(90deg, var(--accent3), #00e676); }
+    .stat-card.green::before  { background: linear-gradient(90deg, var(--success), #00e676); }
+    .stat-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+    .stat-value { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.2; }
+    .stat-sub   { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ─── Two-col layout ─────────────────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    @media(max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ─── Progress bar ───────────────────────────────────────── */
+    .progress-wrap { margin: 14px 0 6px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: var(--muted); }
+    .progress-track { height: 8px; border-radius: 99px; background: var(--surface2); overflow: hidden; }
+    .progress-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.6s ease;
+    }
+
+    /* ─── Eligibility list ───────────────────────────────────── */
+    .check-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13px; padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--surface2); border: 1px solid var(--border);
+    }
+    .check-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .check-item.pass { border-color: rgba(0,230,118,0.3);  background: rgba(0,230,118,0.07); }
+    .check-item.fail { border-color: rgba(255,82,82,0.3);  background: rgba(255,82,82,0.07); }
+    .check-item.wait { border-color: rgba(105,240,174,0.3); background: rgba(245,158,11,0.07); }
+
+    /* ─── Info rows ──────────────────────────────────────────── */
+    .info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key  { color: var(--muted); }
+    .info-val  { font-weight: 600; font-family: monospace; font-size: 13px; }
+    .info-val.green  { color: var(--success); }
+    .info-val.purple { color: var(--accent); }
+    .info-val.amber  { color: var(--accent3); }
+    .info-val.teal   { color: var(--accent2); }
+
+    /* ─── Countdown ──────────────────────────────────────────── */
+    .countdown { display: flex; gap: 10px; justify-content: center; margin: 16px 0; }
+    .cd-box {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 16px; text-align: center; min-width: 64px;
+    }
+    .cd-num  { font-size: 26px; font-weight: 800; color: var(--accent2); line-height: 1; }
+    .cd-unit { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 3px; font-weight: 600; }
+
+    /* ─── Admin panel ────────────────────────────────────────── */
+    .admin-section {
+      background: linear-gradient(135deg, rgba(0,200,83,0.06), rgba(185,246,202,0.06));
+      border: 1px solid rgba(105,240,174,0.25);
+      border-radius: var(--radius); padding: 24px; margin-bottom: 24px;
+    }
+    .admin-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      background: rgba(105,240,174,0.15); color: var(--accent3);
+      border: 1px solid rgba(105,240,174,0.3); border-radius: 20px; padding: 3px 10px; margin-bottom: 14px;
+    }
+    .input-group  { display: flex; gap: 10px; flex-wrap: wrap; }
+    .input-wrap   { flex: 1; min-width: 180px; }
+    .fund-actions { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+    .input-label  { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 6px; display: block; }
+    .input-field {
+      width: 100%; padding: 10px 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text); font-size: 14px;
+      outline: none; transition: border-color 0.2s;
+    }
+    .input-field:focus { border-color: var(--accent); }
+    .input-field::placeholder { color: var(--muted); }
+
+    /* ─── Toast ──────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; max-width: 360px;
+    }
+    .toast {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 14px 18px; border-radius: var(--radius-sm);
+      background: var(--surface); border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      font-size: 13px; line-height: 1.4; color: var(--text);
+      animation: slideIn 0.3s ease;
+    }
+    .toast.success { border-color: rgba(34,197,94,0.4); }
+    .toast.error   { border-color: rgba(255,82,82,0.4); }
+    .toast.info    { border-color: rgba(0,200,83,0.4); }
+    .toast-icon    { font-size: 18px; flex-shrink: 0; }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateX(120%); } }
+
+    /* ─── Spinner ────────────────────────────────────────────── */
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      animation: spin 0.7s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Section heading ────────────────────────────────────── */
+    .section-heading {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted);
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    }
+    .section-heading::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ─── Connect prompt ─────────────────────────────────────── */
+    .connect-prompt {
+      text-align: center; padding: 60px 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .connect-prompt .icon { font-size: 52px; margin-bottom: 16px; }
+    .connect-prompt h2    { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .connect-prompt p     { color: var(--muted); margin-bottom: 24px; }
+
+    /* ─── Pills ──────────────────────────────────────────────── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; padding: 3px 9px;
+      border-radius: 20px; border: 1px solid;
+    }
+    .pill.green  { background: rgba(0,230,118,0.1);  color: var(--success); border-color: rgba(0,230,118,0.3); }
+    .pill.red    { background: rgba(255,82,82,0.1);  color: var(--danger);  border-color: rgba(255,82,82,0.3); }
+    .pill.purple { background: rgba(0,200,83,0.1); color: var(--accent);  border-color: rgba(0,200,83,0.3); }
+    .pill.amber  { background: rgba(105,240,174,0.1); color: var(--accent3); border-color: rgba(105,240,174,0.3); }
+
+    /* ─── Misc ───────────────────────────────────────────────── */
+    .divider    { height: 1px; background: var(--border); margin: 20px 0; }
+    .text-sm    { font-size: 12px; color: var(--muted); }
+    .text-center{ text-align: center; }
+    .mt-12      { margin-top: 12px; }
+    .mt-16      { margin-top: 16px; }
+    .hidden     { display: none !important; }
+
+    /* ─── Bonus highlight ring ───────────────────────────────── */
+    .bonus-ring {
+      border: 1.5px solid rgba(105,240,174,0.3);
+      background: linear-gradient(135deg, rgba(105,240,174,0.05), rgba(0,200,83,0.05));
+    }
+
+    /* ─── Mobile tweaks ──────────────────────────────────────── */
+    @media(max-width: 480px) {
+      header { flex-direction: column; align-items: stretch; text-align: center; padding: 16px; }
+      .logo, .connect-area { justify-content: center; }
+      .card, .admin-section { padding: 18px; }
+      .stat-card { padding: 16px; }
+      .connect-prompt { padding: 40px 18px; }
+      .stat-value { font-size: 18px; }
+      .countdown { gap: 6px; }
+      .cd-box { min-width: 54px; padding: 8px 10px; }
+      .countdown .cd-num { font-size: 20px; }
+      .fund-actions { width: 100%; }
+      .fund-actions .btn { flex: 1; }
+      #toast-container { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-blobs"><span></span><span></span><span></span></div>
+<div id="toast-container"></div>
+
+<div class="page">
+
+  <!-- ─── HEADER ──────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">BV</div>
+      <div class="logo-text">
+        <h1>TRANCE Bonus Vault</h1>
+        <p>Weekly Bonus — 1.54% / Week · ~$250 KAVI Bonus</p>
+      </div>
+    </div>
+    <div class="connect-area">
+      <span class="network-badge" id="network-badge">BSC</span>
+      <span class="wallet-balance hidden" id="wallet-balance"></span>
+      <span class="wallet-addr hidden" id="wallet-addr"></span>
+      <button class="btn btn-primary btn-sm" id="btn-connect">🔗 Connect Wallet</button>
+      <button class="btn btn-outline btn-sm hidden" id="btn-disconnect">Disconnect</button>
+    </div>
+  </header>
+
+  <!-- ─── NOT CONNECTED ───────────────────────────────────────── -->
+  <div id="not-connected">
+    <div class="connect-prompt">
+      <div class="icon">🔐</div>
+      <h2>Connect Your Wallet</h2>
+      <p>Connect your MetaMask or Web3 wallet to access the TRANCE Bonus Vault dashboard.</p>
+      <button class="btn btn-primary" id="btn-connect2">🔗 Connect Wallet</button>
+    </div>
+  </div>
+
+  <!-- ─── DASHBOARD ────────────────────────────────────────────── -->
+  <div id="dashboard" class="hidden">
+
+    <!-- Protocol Stats -->
+    <div class="section-heading">📊 Protocol Stats</div>
+    <div class="stats-grid">
+      <div class="stat-card purple">
+        <div class="stat-label">Bonus Pool</div>
+        <div class="stat-value" id="stat-pool">—</div>
+        <div class="stat-sub">KAVI in vault</div>
+      </div>
+      <div class="stat-card teal">
+        <div class="stat-label">Min Deposit to Qualify</div>
+        <div class="stat-value" id="stat-min-kavi">—</div>
+        <div class="stat-sub">≈ $500 in KAVI (live)</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-label">Bonus Amount</div>
+        <div class="stat-value" id="stat-bonus-kavi">—</div>
+        <div class="stat-sub">≈ $250 in KAVI (live)</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Total Activated</div>
+        <div class="stat-value" id="stat-activated">—</div>
+        <div class="stat-sub">Unique bonus activations</div>
+      </div>
+    </div>
+
+    <!-- Global info row -->
+    <div class="two-col" style="margin-bottom:24px;">
+      <div class="card">
+        <div class="card-title">📈 Vault Info</div>
+        <div class="info-row">
+          <span class="info-key">All-time bonus paid</span>
+          <span class="info-val teal" id="stat-total-paid">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Weekly rate</span>
+          <span class="info-val amber">1.54% / week</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Claim interval</span>
+          <span class="info-val">Every 7 days</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Claim fee</span>
+          <span class="info-val">5% to fee wallet</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Contract Info</div>
+        <div class="info-row">
+          <span class="info-key">Contract</span>
+          <span class="info-val" style="font-size:11px;color:var(--accent2)">0x169c…AE31</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Network</span>
+          <span class="info-val">BNB Smart Chain</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Min TRANCE deposit</span>
+          <span class="info-val">≈ $500 USDT in KAVI</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Bonus value</span>
+          <span class="info-val">≈ $250 in KAVI</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- YOUR BONUS STATUS -->
+    <div class="section-heading">🎁 Your Bonus</div>
+    <div class="two-col">
+
+      <!-- Eligibility & Activate -->
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+          Eligibility Check
+        </div>
+
+        <ul class="check-list" id="eligibility-list">
+          <li class="check-item wait"><span class="check-icon">⏳</span><span>Loading eligibility…</span></li>
+        </ul>
+
+        <div class="mt-16">
+          <button class="btn btn-primary btn-full" id="btn-activate" disabled>
+            🚀 Activate Bonus
+          </button>
+        </div>
+        <div class="text-sm mt-12 text-center" id="activate-status"></div>
+      </div>
+
+      <!-- Claim Panel -->
+      <div class="card bonus-ring">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Weekly Claim
+        </div>
+
+        <!-- Not activated -->
+        <div id="claim-not-activated">
+          <div style="text-align:center; padding: 24px 0; color: var(--muted);">
+            <div style="font-size:36px;margin-bottom:10px;">🔒</div>
+            <p style="font-size:13px;">Activate your bonus first to start weekly claims.</p>
+          </div>
+        </div>
+
+        <!-- Exhausted -->
+        <div id="claim-exhausted" class="hidden" style="text-align:center; padding: 16px 0;">
+          <div style="font-size:36px;margin-bottom:8px;">🏆</div>
+          <span class="pill green">Fully Claimed!</span>
+          <p class="text-sm mt-12">You've claimed your entire bonus. Congratulations!</p>
+        </div>
+
+        <!-- Active claim panel -->
+        <div id="claim-panel" class="hidden">
+          <div class="progress-wrap">
+            <div class="progress-label">
+              <span>Claimed Progress</span>
+              <span id="prog-pct">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <span class="info-key">Total Bonus</span>
+            <span class="info-val purple" id="rw-total">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Claimed</span>
+            <span class="info-val teal" id="rw-claimed">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Remaining</span>
+            <span class="info-val amber" id="rw-remaining">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Weekly Reward</span>
+            <span class="info-val green" id="rw-weekly">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Weeks to exhaust</span>
+            <span class="info-val" id="rw-weeks">—</span>
+          </div>
+
+          <!-- Claim ready -->
+          <div id="claim-ready-wrap" class="hidden">
+            <div class="divider"></div>
+            <div style="text-align:center; margin-bottom: 8px;">
+              <span class="pill green">✅ Claim Ready!</span>
+            </div>
+            <button class="btn btn-teal btn-full" id="btn-claim">💎 Claim Weekly Bonus</button>
+          </div>
+
+          <!-- Countdown -->
+          <div id="claim-countdown-wrap" class="hidden">
+            <div class="divider"></div>
+            <div class="text-sm text-center" style="margin-bottom:8px;color:var(--muted);">Next claim in:</div>
+            <div class="countdown">
+              <div class="cd-box"><div class="cd-num" id="cd-d">00</div><div class="cd-unit">days</div></div>
+              <div class="cd-box"><div class="cd-num" id="cd-h">00</div><div class="cd-unit">hrs</div></div>
+              <div class="cd-box"><div class="cd-num" id="cd-m">00</div><div class="cd-unit">min</div></div>
+              <div class="cd-box"><div class="cd-num" id="cd-s">00</div><div class="cd-unit">sec</div></div>
+            </div>
+            <button class="btn btn-outline btn-full" disabled>⏳ Waiting for next claim</button>
+          </div>
+
+          <div class="text-sm mt-12 text-center" id="claim-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- YOUR TRANCE ACCOUNT -->
+    <div class="section-heading mt-16">👤 Your TRANCE Account</div>
+    <div class="card">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:16px;">
+        <div>
+          <div class="stat-label">TRANCE Deposit</div>
+          <div class="info-val amber mt-12" id="trance-deposit">—</div>
+        </div>
+        <div>
+          <div class="stat-label">Min Required</div>
+          <div class="info-val purple mt-12" id="trance-min">—</div>
+        </div>
+        <div>
+          <div class="stat-label">Deposit Status</div>
+          <div id="trance-deposit-status" class="pill red" style="margin-top:6px;">Checking…</div>
+        </div>
+        <div>
+          <div class="stat-label">Bonus Activated</div>
+          <div id="bonus-activated-pill" class="pill red" style="margin-top:6px;">Not Activated</div>
+        </div>
+        <div>
+          <div class="stat-label">Bonus Exhausted</div>
+          <div id="bonus-exhausted-pill" class="pill green" style="margin-top:6px;">No</div>
+        </div>
+        <div>
+          <div class="stat-label">Pending Reward</div>
+          <div class="info-val green mt-12" id="trance-pending">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL (shown only to admin wallet) -->
+    <div id="admin-section" class="admin-section hidden">
+      <div class="admin-badge">🔑 Admin Panel</div>
+      <div class="section-heading">Fund Bonus Pool</div>
+      <p class="text-sm" style="margin-bottom:16px;">
+        Add KAVI to the bonus pool. Funds can only be claimed by eligible users as weekly bonus rewards.
+      </p>
+      <div class="info-row" style="border-bottom:none; padding-top:0; padding-bottom:12px;">
+        <span class="info-key">Your KAVI Balance</span>
+        <span class="info-val amber" id="fund-wallet-balance">—</span>
+      </div>
+      <div class="info-row" style="border-bottom:none; padding-top:0; padding-bottom:12px;">
+        <span class="info-key">Current Pool Balance</span>
+        <span class="info-val teal" id="fund-pool-balance">—</span>
+      </div>
+      <div class="input-group">
+        <div class="input-wrap">
+          <label class="input-label" for="fund-amount">KAVI Amount</label>
+          <input class="input-field" id="fund-amount" type="number" placeholder="e.g. 10000" min="0" step="any" />
+        </div>
+        <div class="fund-actions">
+          <button class="btn btn-outline btn-sm" id="btn-approve-fund">① Approve</button>
+          <button class="btn btn-amber" id="btn-fund-pool">② Fund Pool</button>
+        </div>
+      </div>
+      <div class="text-sm mt-12" id="fund-status" style="color:var(--muted);"></div>
+    </div>
+
+    <!-- Refresh -->
+    <div class="text-center mt-16">
+      <button class="btn btn-outline btn-sm" id="btn-refresh">🔄 Refresh Data</button>
+    </div>
+
+  </div><!-- /dashboard -->
+</div><!-- /page -->
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   CONFIG
+════════════════════════════════════════════════════════════ */
+const CONTRACT_ADDRESS = "0x169c73703076180921f2932093a304FB613CAE31";
+
+// Admin wallet — controls Fund Pool panel visibility in UI only
+const ADMIN_ADDRESS = "0xd456446E6b6b75f1f5D3437AE8350fd43124F104";
+
+const VAULT_ABI = [
+  // View
+  "function bonusPool() view returns (uint256)",
+  "function totalBonusPaid() view returns (uint256)",
+  "function totalActivated() view returns (uint256)",
+  "function userBonus(address) view returns (uint128 bonusKavi, uint128 claimedKavi, uint48 lastClaim, bool activated, bool exhausted)",
+  "function pendingReward(address) view returns (uint256)",
+  "function getUserInfo(address) view returns (bool activated, bool exhausted, uint256 bonusKavi, uint256 claimedKavi, uint256 remainingKavi, uint256 nextClaimAt, uint256 weeklyRewardKavi)",
+  "function daysToExhaust(address) view returns (uint256)",
+  "function getLiveInfo() view returns (uint256 minKaviToQualify, uint256 bonusKaviNow, uint256 poolBalance)",
+  "function getMinKaviForQualify() view returns (uint256)",
+  "function getBonusKaviAmount() view returns (uint256)",
+  "function token() view returns (address)",
+  "function trance() view returns (address)",
+  // Write
+  "function activateBonus()",
+  "function claim()",
+  "function fundPool(uint256 amount)",
+];
+
+const ERC20_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+];
+
+const TRANCE_ABI = [
+  "function users(address) view returns (bool registered, uint256 deposit, uint256 claimed, uint256 lastClaim, address referrer, uint256 directQualified, bool countedDirect, bool capped)",
+];
+
+/* ════════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════════ */
+let provider, signer, userAddress;
+let vaultContract, tokenContract, tranceContractInst;
+let countdownInterval;
+
+/* ════════════════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════════════════ */
+const fmt = (bn, dec = 18, digits = 2) =>
+  parseFloat(ethers.utils.formatUnits(bn, dec)).toLocaleString('en-US', { maximumFractionDigits: digits });
+
+const shortAddr = a => a ? `${a.slice(0, 6)}…${a.slice(-4)}` : '—';
+
+function toast(msg, type = 'info', duration = 5000) {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'fadeOut 0.4s ease forwards';
+    setTimeout(() => el.remove(), 400);
+  }, duration);
+}
+
+function setBtn(id, loading, text) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.innerHTML = loading ? `<span class="spinner"></span> ${text}` : text;
+}
+
+/* ════════════════════════════════════════════════════════════
+   WALLET CONNECTION
+════════════════════════════════════════════════════════════ */
+async function connectWallet() {
+  if (!window.ethereum) {
+    toast('MetaMask not detected. Please install it.', 'error');
+    return;
+  }
+  try {
+    setBtn('btn-connect', true, 'Connecting…');
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer   = provider.getSigner();
+    userAddress = await signer.getAddress();
+
+    await setupContracts();
+    updateHeaderUI();
+    showDashboard();
+    await loadAllData();
+
+    window.ethereum.on('accountsChanged', handleAccountChange);
+    window.ethereum.on('chainChanged', () => window.location.reload());
+  } catch (e) {
+    toast(e.message || 'Connection failed', 'error');
+  } finally {
+    setBtn('btn-connect', false, '🔗 Connect Wallet');
+  }
+}
+
+async function setupContracts() {
+  vaultContract = new ethers.Contract(CONTRACT_ADDRESS, VAULT_ABI, signer);
+  const [tokenAddr, tranceAddr] = await Promise.all([
+    vaultContract.token(),
+    vaultContract.trance(),
+  ]);
+  tokenContract      = new ethers.Contract(tokenAddr,  ERC20_ABI,  signer);
+  tranceContractInst = new ethers.Contract(tranceAddr, TRANCE_ABI, provider);
+}
+
+async function handleAccountChange(accounts) {
+  if (accounts.length === 0) disconnectWallet();
+  else { userAddress = accounts[0]; updateHeaderUI(); await loadAllData(); }
+}
+
+function disconnectWallet() {
+  provider = signer = userAddress = null;
+  vaultContract = tokenContract = tranceContractInst = null;
+  clearInterval(countdownInterval);
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('not-connected').classList.remove('hidden');
+  document.getElementById('wallet-addr').classList.add('hidden');
+  document.getElementById('wallet-balance').classList.add('hidden');
+  document.getElementById('btn-disconnect').classList.add('hidden');
+  document.getElementById('btn-connect').classList.remove('hidden');
+}
+
+function updateHeaderUI() {
+  document.getElementById('wallet-addr').textContent = shortAddr(userAddress);
+  document.getElementById('wallet-addr').classList.remove('hidden');
+  document.getElementById('btn-disconnect').classList.remove('hidden');
+  document.getElementById('btn-connect').classList.add('hidden');
+
+  const isAdmin = userAddress?.toLowerCase() === ADMIN_ADDRESS.toLowerCase();
+  document.getElementById('admin-section').classList.toggle('hidden', !isAdmin);
+}
+
+function showDashboard() {
+  document.getElementById('not-connected').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+}
+
+/* ════════════════════════════════════════════════════════════
+   LOAD ALL DATA
+════════════════════════════════════════════════════════════ */
+async function loadAllData() {
+  if (!userAddress) return;
+  try {
+    await Promise.all([
+      loadGlobalStats(),
+      loadUserBonusStatus(),
+      loadTranceData(),
+      loadWalletBalance(),
+    ]);
+  } catch (e) {
+    console.error('Data load error:', e);
+    toast('Error loading data. Check console.', 'error');
+  }
+}
+
+async function loadWalletBalance() {
+  const balance = await tokenContract.balanceOf(userAddress);
+  const text = `${fmt(balance)} KAVI`;
+  document.getElementById('wallet-balance').textContent = text;
+  document.getElementById('wallet-balance').classList.remove('hidden');
+  const fundEl = document.getElementById('fund-wallet-balance');
+  if (fundEl) fundEl.textContent = text;
+}
+
+async function loadGlobalStats() {
+  const [liveInfo, totalPaid, totalActivated] = await Promise.all([
+    vaultContract.getLiveInfo(),
+    vaultContract.totalBonusPaid(),
+    vaultContract.totalActivated(),
+  ]);
+
+  document.getElementById('stat-pool').textContent      = `${fmt(liveInfo.poolBalance)} KAVI`;
+  document.getElementById('stat-min-kavi').textContent  = `${fmt(liveInfo.minKaviToQualify)} KAVI`;
+  document.getElementById('stat-bonus-kavi').textContent= `${fmt(liveInfo.bonusKaviNow)} KAVI`;
+  document.getElementById('stat-activated').textContent = totalActivated.toString();
+  document.getElementById('stat-total-paid').textContent= `${fmt(totalPaid)} KAVI`;
+  const fundPoolEl = document.getElementById('fund-pool-balance');
+  if (fundPoolEl) fundPoolEl.textContent = `${fmt(liveInfo.poolBalance)} KAVI`;
+}
+
+async function loadUserBonusStatus() {
+  const [info, pending, liveInfo] = await Promise.all([
+    vaultContract.getUserInfo(userAddress),
+    vaultContract.pendingReward(userAddress),
+    vaultContract.getLiveInfo(),
+  ]);
+
+  const { activated, exhausted, bonusKavi, claimedKavi, remainingKavi, nextClaimAt, weeklyRewardKavi } = info;
+
+  // Eligibility check
+  const tranceUser = await tranceContractInst.users(userAddress);
+  const deposit = tranceUser.deposit;
+  const minKavi = liveInfo.minKaviToQualify;
+  const depositOk = deposit.gte(minKavi);
+  const poolOk    = liveInfo.poolBalance.gt(0);
+
+  // TRANCE account row
+  document.getElementById('trance-deposit').textContent = `${fmt(deposit)} KAVI`;
+  document.getElementById('trance-min').textContent     = `${fmt(minKavi)} KAVI`;
+  document.getElementById('trance-pending').textContent = `${fmt(pending)} KAVI`;
+
+  const depStatusEl = document.getElementById('trance-deposit-status');
+  depStatusEl.textContent  = depositOk ? '✅ Sufficient' : '❌ Too Low';
+  depStatusEl.className    = `pill ${depositOk ? 'green' : 'red'}`;
+
+  const activatedPill = document.getElementById('bonus-activated-pill');
+  activatedPill.textContent = activated ? '✅ Activated' : 'Not Activated';
+  activatedPill.className   = `pill ${activated ? 'green' : 'red'}`;
+
+  const exhaustedPill = document.getElementById('bonus-exhausted-pill');
+  exhaustedPill.textContent = exhausted ? '⚠️ Exhausted' : 'No';
+  exhaustedPill.className   = `pill ${exhausted ? 'amber' : 'green'}`;
+
+  // Eligibility list
+  buildEligibilityList(activated, exhausted, depositOk, poolOk);
+
+  // Activate button
+  const btnActivate = document.getElementById('btn-activate');
+  if (activated) {
+    btnActivate.disabled  = true;
+    btnActivate.innerHTML = '✅ Already Activated';
+  } else {
+    const canActivate = depositOk && poolOk;
+    btnActivate.disabled  = !canActivate;
+    btnActivate.innerHTML = canActivate ? '🚀 Activate Bonus' : '🔒 Not Eligible Yet';
+  }
+
+  // Claim panel state
+  const notActivated = document.getElementById('claim-not-activated');
+  const exhaustedEl  = document.getElementById('claim-exhausted');
+  const claimPanel   = document.getElementById('claim-panel');
+
+  notActivated.classList.toggle('hidden', activated);
+  exhaustedEl.classList.toggle('hidden', !(activated && exhausted));
+  claimPanel.classList.toggle('hidden', !activated || exhausted);
+
+  if (activated && !exhausted) {
+    const pct = bonusKavi.gt(0)
+      ? Math.min(100, Math.floor(claimedKavi.mul(100).div(bonusKavi).toNumber()))
+      : 0;
+    document.getElementById('progress-fill').style.width = `${pct}%`;
+    document.getElementById('prog-pct').textContent = `${pct}%`;
+    document.getElementById('rw-total').textContent    = `${fmt(bonusKavi)} KAVI`;
+    document.getElementById('rw-claimed').textContent  = `${fmt(claimedKavi)} KAVI`;
+    document.getElementById('rw-remaining').textContent= `${fmt(remainingKavi)} KAVI`;
+    document.getElementById('rw-weekly').textContent   = `${fmt(weeklyRewardKavi)} KAVI`;
+
+    // weeks to exhaust
+    const daysEl = document.getElementById('rw-weeks');
+    try {
+      const days = await vaultContract.daysToExhaust(userAddress);
+      daysEl.textContent = days.gt(0) ? `~${days.toString()} weeks` : '—';
+    } catch { daysEl.textContent = '—'; }
+
+    const now  = Math.floor(Date.now() / 1000);
+    const next = nextClaimAt.toNumber();
+    const readyWrap = document.getElementById('claim-ready-wrap');
+    const cdownWrap = document.getElementById('claim-countdown-wrap');
+    readyWrap.classList.toggle('hidden', now < next);
+    cdownWrap.classList.toggle('hidden', now >= next);
+    if (now < next) startCountdown(next);
+  }
+}
+
+function buildEligibilityList(activated, exhausted, depositOk, poolOk) {
+  const list = document.getElementById('eligibility-list');
+  if (activated) {
+    list.innerHTML = `
+      <li class="check-item pass">
+        <span class="check-icon">✅</span>
+        <span>Bonus already activated — check Weekly Claim panel.</span>
+      </li>`;
+    return;
+  }
+  const checks = [
+    { pass: depositOk, label: depositOk ? 'TRANCE deposit ≥ $500 in KAVI' : 'TRANCE deposit too low — need ≥ $500 in KAVI' },
+    { pass: poolOk,    label: poolOk    ? 'Bonus pool has sufficient KAVI' : 'Bonus pool is currently empty' },
+    { pass: !exhausted,label: exhausted ? 'Bonus already fully claimed' : 'Bonus not yet exhausted' },
+  ];
+  list.innerHTML = checks.map(c => `
+    <li class="check-item ${c.pass ? 'pass' : 'fail'}">
+      <span class="check-icon">${c.pass ? '✅' : '❌'}</span>
+      <span>${c.label}</span>
+    </li>`).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   TRANCE DATA
+════════════════════════════════════════════════════════════ */
+async function loadTranceData() {
+  // Covered inside loadUserBonusStatus — no separate call needed
+}
+
+/* ════════════════════════════════════════════════════════════
+   COUNTDOWN
+════════════════════════════════════════════════════════════ */
+function startCountdown(nextClaimAt) {
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    const diff = nextClaimAt - Math.floor(Date.now() / 1000);
+    if (diff <= 0) {
+      clearInterval(countdownInterval);
+      loadUserBonusStatus();
+      return;
+    }
+    const d = Math.floor(diff / 86400);
+    const h = Math.floor((diff % 86400) / 3600);
+    const m = Math.floor((diff % 3600) / 60);
+    const s = diff % 60;
+    document.getElementById('cd-d').textContent = String(d).padStart(2,'0');
+    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+  }, 1000);
+}
+
+/* ════════════════════════════════════════════════════════════
+   ACTIVATE BONUS
+════════════════════════════════════════════════════════════ */
+async function activateBonus() {
+  try {
+    setBtn('btn-activate', true, 'Activating…');
+    document.getElementById('activate-status').textContent = '';
+
+    const tx = await vaultContract.activateBonus();
+    document.getElementById('activate-status').textContent = '⏳ Waiting for confirmation…';
+    toast('Transaction submitted — waiting for confirmation…', 'info');
+
+    await tx.wait();
+    toast('🎉 Bonus activated successfully!', 'success');
+    document.getElementById('activate-status').textContent = '✅ Bonus activated!';
+    await loadAllData();
+  } catch (e) {
+    const msg = parseError(e);
+    toast(msg, 'error');
+    document.getElementById('activate-status').textContent = `❌ ${msg}`;
+  } finally {
+    setBtn('btn-activate', false, '🚀 Activate Bonus');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   CLAIM WEEKLY BONUS
+════════════════════════════════════════════════════════════ */
+async function claimBonus() {
+  try {
+    setBtn('btn-claim', true, 'Claiming…');
+    document.getElementById('claim-status').textContent = '';
+
+    const tx = await vaultContract.claim();
+    document.getElementById('claim-status').textContent = '⏳ Waiting for confirmation…';
+    toast('Claim transaction submitted…', 'info');
+
+    await tx.wait();
+    toast('💎 Weekly bonus claimed!', 'success');
+    document.getElementById('claim-status').textContent = '✅ Claimed successfully!';
+    await loadAllData();
+  } catch (e) {
+    const msg = parseError(e);
+    toast(msg, 'error');
+    document.getElementById('claim-status').textContent = `❌ ${msg}`;
+  } finally {
+    setBtn('btn-claim', false, '💎 Claim Weekly Bonus');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   FUND POOL (admin only)
+════════════════════════════════════════════════════════════ */
+async function approveForFund() {
+  const raw = document.getElementById('fund-amount').value;
+  if (!raw || isNaN(raw) || Number(raw) <= 0) { toast('Enter a valid KAVI amount.', 'error'); return; }
+  try {
+    setBtn('btn-approve-fund', true, 'Approving…');
+    document.getElementById('fund-status').textContent = '';
+    const amount = ethers.utils.parseEther(raw);
+    const tx = await tokenContract.approve(CONTRACT_ADDRESS, amount);
+    document.getElementById('fund-status').textContent = '⏳ Approval pending…';
+    await tx.wait();
+    toast('KAVI approval confirmed.', 'success');
+    document.getElementById('fund-status').textContent = '✅ Approved. Now click Fund Pool.';
+  } catch (e) {
+    const msg = parseError(e);
+    toast(msg, 'error');
+    document.getElementById('fund-status').textContent = `❌ ${msg}`;
+  } finally {
+    setBtn('btn-approve-fund', false, '① Approve');
+  }
+}
+
+async function fundPool() {
+  const raw = document.getElementById('fund-amount').value;
+  if (!raw || isNaN(raw) || Number(raw) <= 0) { toast('Enter a valid KAVI amount.', 'error'); return; }
+  try {
+    setBtn('btn-fund-pool', true, 'Funding…');
+    document.getElementById('fund-status').textContent = '';
+    const amount = ethers.utils.parseEther(raw);
+
+    const allowance = await tokenContract.allowance(userAddress, CONTRACT_ADDRESS);
+    if (allowance.lt(amount)) {
+      toast('Please approve KAVI first.', 'error');
+      document.getElementById('fund-status').textContent = '❌ Insufficient allowance. Click Approve first.';
+      return;
+    }
+
+    const tx = await vaultContract.fundPool(amount);
+    document.getElementById('fund-status').textContent = '⏳ Funding pending…';
+    await tx.wait();
+    toast(`✅ Pool funded with ${raw} KAVI!`, 'success');
+    document.getElementById('fund-status').textContent = '✅ Pool funded successfully!';
+    document.getElementById('fund-amount').value = '';
+    await loadGlobalStats();
+  } catch (e) {
+    const msg = parseError(e);
+    toast(msg, 'error');
+    document.getElementById('fund-status').textContent = `❌ ${msg}`;
+  } finally {
+    setBtn('btn-fund-pool', false, '② Fund Pool');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   ERROR PARSING
+════════════════════════════════════════════════════════════ */
+function parseError(e) {
+  if (e?.code === 4001 || e?.code === 'ACTION_REJECTED') return 'Transaction rejected by user.';
+  const msg = e?.reason || e?.data?.message || e?.message || 'Unknown error';
+  const map = {
+    'AlreadyActivated' : 'Bonus already activated.',
+    'NotEligible'      : 'TRANCE deposit below minimum ($500 in KAVI).',
+    'NoActiveBonus'    : 'Activate your bonus first.',
+    'BonusExhausted'   : 'Your bonus has been fully claimed.',
+    'Wait7Days'        : 'You must wait 7 days between claims.',
+    'PoolEmpty'        : 'Bonus pool is currently empty.',
+    'ZeroReward'       : 'No reward available right now.',
+    'NotAdmin'         : 'Only admin can fund the pool.',
+    'ZeroAmount'       : 'Amount must be greater than zero.',
+    'ZeroAddress'      : 'Zero address not allowed.',
+  };
+  for (const [key, val] of Object.entries(map)) {
+    if (msg.includes(key)) return val;
+  }
+  return msg.length > 120 ? msg.slice(0, 120) + '…' : msg;
+}
+
+/* ════════════════════════════════════════════════════════════
+   EVENT LISTENERS
+════════════════════════════════════════════════════════════ */
+document.getElementById('btn-connect').addEventListener('click', connectWallet);
+document.getElementById('btn-connect2').addEventListener('click', connectWallet);
+document.getElementById('btn-disconnect').addEventListener('click', disconnectWallet);
+document.getElementById('btn-activate').addEventListener('click', activateBonus);
+document.getElementById('btn-claim').addEventListener('click', claimBonus);
+document.getElementById('btn-approve-fund').addEventListener('click', approveForFund);
+document.getElementById('btn-fund-pool').addEventListener('click', fundPool);
+document.getElementById('btn-refresh').addEventListener('click', async () => {
+  toast('Refreshing data…', 'info', 2000);
+  await loadAllData();
+});
+
+// Auto-connect if already authorized
+window.addEventListener('load', async () => {
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer   = provider.getSigner();
+        userAddress = accounts[0];
+        await setupContracts();
+        updateHeaderUI();
+        showDashboard();
+        await loadAllData();
+        window.ethereum.on('accountsChanged', handleAccountChange);
+        window.ethereum.on('chainChanged', () => window.location.reload());
+      }
+    } catch {}
+  }
+});
+</script>
+</body>
+</html>
